@@ -29,7 +29,7 @@ trait SwEsDcbStore[DataSuper, JavaDataSuper]
    * be a _Java-sealed_ interface, as a requirement from how EventStore works to autodetect subclasses/records of it.
    * It needs to have one subclass/record per value of the "Event Type" that shall be appended to the event store.
    * This is because the sliceworkz-eventstore auto-detects from this [[JavaDataSuper]] type all subclasses/records,
-   * generates their simple class names, and builds from them the correpsonding "Event Type" values. It will later only
+   * generates their simple class names, and builds from them the correspsonding "Event Type" values. It will later only
    * accept appending events with "Event Type" values, which previously were registered.
    * That is: the sliceworkz-eventstore API does _not_ treat the "Event Data" to be opaque to the event store, but
    * rather hard-codes that the type of the "Event Data" determines the value of the corresponding "Event Type".
