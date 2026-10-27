@@ -1,10 +1,15 @@
 This is an adapter between the `DcbStore` API and the sliceworkz-eventstore-api library, see
 https://sliceworkz.github.io/eventstore/.
 
+This document is the design rationale for the adapter, and specifically the reason SwEsDcbStore
+demands a _Java-sealed_ root event interface plus explicit Scala-to-Java and Java-to-Scala
+mappings rather than accepting Scala event classes directly. Read it before attempting to
+simplify that away.
+
 With sliceworkz-eventstore, the event root class/interface and the individual event classes must be written in plain
 Java and cannot be written in Scala 3. This is for complicated, blocking, and cumbersome reasons.
 
-Blocking reason:
+Blocking reason (as of sliceworkz-eventstore 0.9.1):
 sliceworkz-eventstore uses Jackson to serialize/deserialize Java data to/from JSON. Jackson's default mapping would
 not work for Scala. An event interface/class written in Scala is therefore not serializable and yields runtime errors
 like:
@@ -12,6 +17,10 @@ like:
     Caused by: com.fasterxml.jackson.databind.exc.InvalidDefinitionException:
     No serializer found for class hcd.sweventstore.HcdEvent and no properties discovered to create BeanSerializer
     (to avoid exception, disable SerializationFeature.FAIL_ON_EMPTY_BEANS)
+
+(That message is quoted verbatim from the original investigation inside the (currently non-public) HealthCareDay
+application, where the event root was `hcd.sweventstore.HcdEvent`. It is left unchanged so that it
+stays searchable.)
 
 Jackson supports adding functionality via modules, and a Jackson module for Scala exists,
 see https://github.com/FasterXML/jackson-module-scala.
@@ -30,8 +39,12 @@ Scala module, it must be explicitly put to the class path via sbt libraryDepende
 
     libraryDependencies += "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.21.3"
 
+(Note, as of 2026-09: sliceworkz-eventstore 0.9.1 has since moved to Jackson 3, whose groupId is
+`tools.jackson.core` rather than `com.fasterxml.jackson.core`. The coordinates above are the
+Jackson 2 ones from the original investigation.)
+
 It is a bit unclear if this really works. According to the documentation in
-https:github.com/FasterXML/jackson-module-scala?tab=readme-ov-file#javakotlin-users,
+https://github.com/FasterXML/jackson-module-scala?tab=readme-ov-file#javakotlin-users,
 explicitly adding the Scala module would have required using
 `tools.jackson.module.scala.javadsl.DefaultScalaModule.getInstance()` rather than
 `tools.jackson.module.scala.DefaultScalaModule`.
@@ -84,3 +97,55 @@ To overcome the Jackson serialization problems with Scala instances, I have to r
 plain Java events from the sliceworkz-eventstore API. Therefore, this SwEsDcbStore adapter requires a Java sealed
 interface as a root event class, and Scala-to-Java and Java-to-Scala conversions to be explicitly given by a user of
 this library.
+
+# Jackson and Play coexistence
+
+This library publishes its `sliceworkz-eventstore-api` dependency **unexcluded**. That is a
+deliberate decision, and it moves work onto Play-based consumers, so here is the reasoning.
+
+sliceworkz-eventstore brings a Jackson newer than the one Play pins. Play version-checks Jackson at
+runtime (via `jackson-module-scala`) and refuses to start when it finds a version outside the range
+it expects. The historical fix, while this adapter still lived inside the HealthCareDay
+application, was to exclude Jackson from this module's own `Compile` dependency:
+
+    "org.sliceworkz" % "sliceworkz-eventstore-api" % swEventStoreVersion % Compile excludeAll (
+      ExclusionRule(organization = "com.fasterxml.jackson.core", name = "jackson-databind"),
+      ExclusionRule(organization = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jsr310"),
+    )
+
+That exclusion is **not** reproduced here, because it is a property of a *Play consumer*, not of
+this library. Baking it into the published metadata would hand every other consumer a
+`sliceworkz-eventstore-api` with artifacts silently subtracted from its dependency graph, and a
+consumer who then hits a `NoClassDefFoundError` has no way to guess that a library removed
+something. Adding an exclusion is discoverable; undoing a hidden one is not.
+
+A Play consumer must therefore apply the exclusion itself, on its own dependency on this artifact,
+and on the project whose classpath the Play application actually inherits:
+
+    "de.carsten-langer" %% "dcb-store-sw-eventstore" % dcbStoreSwEsVersion % Compile excludeAll (jacksonExclusions *)
+
+Two things are worth knowing about how that behaves. Exclusions are **per-path**: if the same
+Jackson artifact is also reachable through another, non-excluded dependency, it still lands on the
+classpath, so every path to sliceworkz needs the same treatment. And exclusions attach to the
+*consumer's* dependency declaration, so they must sit on the project whose resolved classpath
+matters, not on an aggregating root that never declares this artifact directly.
+
+## Measured state, 2026-09
+
+The exclusion above is very probably a **no-op** today, and it is worth recording why so that
+nobody re-derives it:
+
+- sliceworkz-eventstore 0.9.1 inherits its Jackson dependency from `sliceworkz-eventstore-parent-pom`,
+  which declares **Jackson 3**: `tools.jackson.core:jackson-databind:3.1.4`.
+- The exclusion rules name **Jackson 2** coordinates, `com.fasterxml.jackson.core:jackson-databind`
+  and `com.fasterxml.jackson.datatype:jackson-datatype-jsr310`. Neither appears anywhere in
+  sliceworkz 0.9.1's tree, so along that path there is nothing left to exclude.
+- A `dependencyList` of the consuming Play application's `Compile` configuration shows
+  `tools.jackson.core:*:3.1.4` and Play's `com.fasterxml.jackson.*:2.14.3` present side by side, plus
+  `com.fasterxml.jackson.core:jackson-annotations` evicted up to `2.21` by Jackson 3's BOM. That last
+  one is **not** in the exclusion list, and the application starts and serves pages regardless, so
+  Play evidently tolerates it.
+
+Dropping the exclusions on the consumer side is therefore a reasonable experiment, but it has to be
+verified with a running application and an actually rendered page: Play checks the Jackson version at
+runtime, so a successful `compile` proves nothing.

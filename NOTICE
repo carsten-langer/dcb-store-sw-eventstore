@@ -1,0 +1,18 @@
+This product includes software developed by third parties:
+
+- Scala (https://www.scala-lang.org/) - licensed under Apache 2.0 License
+- sliceworkz-eventstore (https://github.com/sliceworkz/eventstore) - licensed under GNU LGPL-3.0 License
+- Jackson Databind (https://github.com/FasterXML/jackson-databind) - licensed under Apache 2.0 License
+- SLF4J API (https://www.slf4j.org/) - licensed under MIT License
+
+Jackson and SLF4J are reached transitively through sliceworkz-eventstore.
+
+And for testing:
+- ScalaTest (https://www.scalatest.org/) - licensed under Apache 2.0 License
+- Cucumber Scala (https://github.com/cucumber/cucumber-jvm-scala) - licensed under MIT License
+- Junit (https://github.com/junit-team/junit-framework) - licensed under Eclipse Public License 2.0
+- sbt Jupiter Interface (https://github.com/sbt/sbt-jupiter-interface) - licensed under Apache 2.0 License
+- Micrometer Application Metrics (https://github.com/micrometer-metrics/micrometer) - licensed under Apache 2.0 License
+
+Many ideas are taken from https://dcb.events/ and the example implementation in TypeScript at
+https://github.com/dcb-events/dcb-events.github.io/tree/main/libraries/dcb

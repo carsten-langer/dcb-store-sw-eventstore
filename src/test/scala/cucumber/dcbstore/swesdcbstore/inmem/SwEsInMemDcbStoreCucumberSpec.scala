@@ -1,12 +1,15 @@
 package cucumber.dcbstore.swesdcbstore.inmem
 
 import io.cucumber.core.options.Constants.{FILTER_TAGS_PROPERTY_NAME, GLUE_PROPERTY_NAME, PLUGIN_PROPERTY_NAME}
-import org.junit.platform.suite.api.{ConfigurationParameter, IncludeEngines, SelectPackages, Suite}
+import org.junit.platform.suite.api.{ConfigurationParameter, IncludeEngines, SelectClasspathResource, Suite}
 
 // https://docs.junit.org/current/api/org.junit.platform.suite.api/org/junit/platform/suite/api/package-summary.html
 @Suite
 @IncludeEngines(Array("cucumber"))
-@SelectPackages(Array("cucumber.dcbstore"))
+// DcbStore.feature is NOT in this repo: it arrives inside the dcb-store-testkit jar. It must
+// therefore be selected by classpath RESOURCE - Cucumber package scanning for .feature resources
+// inside jars is unreliable, and would silently yield a suite that runs zero scenarios.
+@SelectClasspathResource("cucumber/dcbstore/DcbStore.feature")
 @ConfigurationParameter(key = FILTER_TAGS_PROPERTY_NAME, value = "not @ignore")
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "cucumber.dcbstore.swesdcbstore.inmem")
 // https://cucumber.io/docs/cucumber/reporting/#built-in-reporter-plugins
