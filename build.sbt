@@ -36,7 +36,9 @@ val cucumberSbtIntegrationSettingsForTest = Def.settings(
     // https://github.com/cucumber/cucumber-jvm/tree/main/cucumber-junit-platform-engine
     // Must match the cucumber-core major version that cucumber-scala (via dcb-store-testkit) brings in,
     // see the dcb-store-scala build. A mismatch fails at runtime with an AbstractMethodError.
-    "io.cucumber" % "cucumber-junit-platform-engine" % "7.34.4" % Test,
+    // Cucumber (JVM) 8 needs a JSON library on the classpath to write its reports.
+    // As sliceworkz-eventstore transitively pulls Jackson, this is good enough.
+    "io.cucumber" % "cucumber-junit-platform-engine" % "8.0.4" % Test,
     // https://github.com/junit-team/junit-framework/tree/main/junit-platform-suite
     "org.junit.platform" % "junit-platform-suite" % JupiterKeys.junitPlatformVersion.value % Test,
     // https://github.com/sbt/sbt-jupiter-interface
@@ -74,7 +76,7 @@ lazy val root = (project in file("."))
       // However, it sets it as optional in its dependencies, probably because it does not want to
       // impose any version to the clients. Thus, it is added here explicitly.
       // https://github.com/micrometer-metrics/micrometer
-      "io.micrometer" % "micrometer-core" % "1.17.0" % Test,
+      "io.micrometer" % "micrometer-core" % "1.17.2" % Test,
     ),
     cucumberSbtIntegrationSettingsForTest,
   )

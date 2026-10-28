@@ -102,6 +102,15 @@ When adding a third-party dependency, add it to `NOTICE`.
   scan the classpath for `cucumber/dcbstore/*.feature`, which is unreliable inside jars and fails by
   silently running **zero scenarios** while still reporting success. Always cross-check the scenario
   count against what `dcb-store-scala` reports.
+- Cucumber (JVM) 8 needs a **JSON library on the test classpath** for its serialising report plugins
+  (this repo's runner configures `html:`), otherwise the run fails with
+  "Cucumber needs a JSON library to write reports". It accepts Jackson 3
+  (`tools.jackson.core:jackson-databind`) or Jackson 2 (`jackson-databind` + `jackson-datatype-jdk8`).
+  This repo declares no JSON library of its own: `sliceworkz-eventstore-api` already brings Jackson 3
+  (`tools.jackson.core:jackson-databind`) transitively. If sliceworkz ever drops or changes it, add
+  one `% Test` in `cucumberSbtIntegrationSettingsForTest`. The testkit deliberately does not export
+  one, so each implementation must supply its own.
+- **Java 17+** (Cucumber 8 and Jackson 3 require it). Developed on Temurin 27 and tested with Temurin 21.
 - **The Jackson exclusion is deliberately absent.** `sliceworkz-eventstore-api` is published
   unexcluded here; a Play consumer applies the exclusion on its own dependency. See the "Jackson and
   Play coexistence" section of `Readme-Design.md` before changing this, and

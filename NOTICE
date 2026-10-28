@@ -9,6 +9,7 @@ Jackson and SLF4J are reached transitively through sliceworkz-eventstore.
 
 And for testing:
 - ScalaTest (https://www.scalatest.org/) - licensed under Apache 2.0 License
+- Cucumber JVM JUnit Platform Engine (https://github.com/cucumber/cucumber-jvm) - licensed under MIT License
 - Cucumber Scala (https://github.com/cucumber/cucumber-jvm-scala) - licensed under MIT License
 - Junit (https://github.com/junit-team/junit-framework) - licensed under Eclipse Public License 2.0
 - sbt Jupiter Interface (https://github.com/sbt/sbt-jupiter-interface) - licensed under Apache 2.0 License

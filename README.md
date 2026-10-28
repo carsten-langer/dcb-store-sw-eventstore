@@ -85,13 +85,13 @@ version at runtime.
   TASTy is only readable by the same or a newer compiler, and here the chain is two hops deep
   (your app → this adapter → `dcb-store`).
 - `-language:strictEquality` is expected.
-- Java 17+ (developed and tested against Temurin 21). The event records need Java 17 for
-  `sealed interface` and `record`.
+- Java 17+ (developed on Temurin 27 and tested with Temurin 21). The event records need Java 17 for
+  `sealed interface` and `record`; Cucumber 8 and Jackson 3 need it as well.
 - **Micrometer must be added by you.** sliceworkz needs `io.micrometer:micrometer-core` at runtime but
-  declares it optional in its POM, so it does not arrive transitively. This repo's tests use 1.17.0:
+  declares it optional in its POM, so it does not arrive transitively. This repo's tests use 1.17.2:
 
   ```scala
-  libraryDependencies += "io.micrometer" % "micrometer-core" % "1.17.0"
+  libraryDependencies += "io.micrometer" % "micrometer-core" % "1.17.2"
   ```
 
 ## Building
