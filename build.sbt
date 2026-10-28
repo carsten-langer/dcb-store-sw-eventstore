@@ -6,6 +6,9 @@ ThisBuild / organization := "de.carsten-langer"
 
 ThisBuild / version := "0.1.0-SNAPSHOT"
 
+// Written into the published POM / ivy.xml. See the LICENSE and NOTICE files.
+ThisBuild / licenses := Seq(License.Apache2)
+
 // Must match the dcb-store library this adapter is built against: a library built with 3.8.4 can
 // only be read by Scala 3.8+. See the dcb-store-scala build for why 3.7 is the hard floor for that code base.
 ThisBuild / scalaVersion := "3.8.4"
@@ -62,6 +65,9 @@ lazy val root = (project in file("."))
     // Until the Scaladoc is warning-clean, do not publish a doc jar.
     // Alternative: Compile / doc / scalacOptions -= "-Werror".
     Compile / packageDoc / publishArtifact := false,
+    // Ship the Apache 2.0 LICENSE and the NOTICE in every published jar, as the license asks for.
+    Compile / packageBin / mappings ++= licenseMappings.value,
+    Compile / packageSrc / mappings ++= licenseMappings.value,
     libraryDependencies ++= Seq(
       // The generic DCB store API that this library adapts sliceworkz-eventstore to.
       "de.carsten-langer" %% "dcb-store" % dcbStoreVersion,
@@ -80,6 +86,10 @@ lazy val root = (project in file("."))
     ),
     cucumberSbtIntegrationSettingsForTest,
   )
+lazy val licenseMappings = Def.setting {
+  val rootDir = (LocalRootProject / baseDirectory).value
+  Seq(rootDir / "LICENSE" -> "META-INF/LICENSE", rootDir / "NOTICE" -> "META-INF/NOTICE")
+}
 
 
 ////////////////////////////////////////

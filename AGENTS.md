@@ -71,6 +71,7 @@ artifact plainly exists in the other `.ivy2`.
 │   ├── SwEsDcbStoreStepDefinitions.scala backend-agnostic bridge to DcbStoreStepDefinitions
 │   └── inmem/                            the concrete in-memory backend + its runner
 ├── README.md                             consumer-facing view
+├── LICENSE                               Apache 2.0, verbatim
 ├── Readme-Design.md                      design rationale (Java events, Jackson, Play)
 ├── NOTICE                                third-party attributions
 └── .idea/runConfigurations/              tracked IntelliJ JUnit run config for the in-memory spec
@@ -84,7 +85,16 @@ and hard-codes the runner's class name, its package and the IntelliJ module name
 `dcb-store-sw-eventstore.test`. Renaming or moving the runner, or renaming the sbt project, means
 updating it too.
 
-When adding a third-party dependency, add it to `NOTICE`.
+## License
+
+Licensed under Apache 2.0: `LICENSE` holds the verbatim license text, `NOTICE` the copyright line
+and third-party attributions, and `ThisBuild / licenses` puts it into the published POM. The root
+project copies both files into `META-INF/` of the published binary and sources jar. Keep `NOTICE`
+up to date when adding or removing dependencies.
+
+sliceworkz-eventstore stays LGPL-3.0. This adapter only depends on it and does not bundle or
+modify it, so the Apache 2.0 license of this repo is unaffected. Do not copy sliceworkz source
+into this repo.
 
 ## Constraints worth knowing before editing
 
