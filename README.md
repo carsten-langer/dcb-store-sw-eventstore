@@ -3,7 +3,7 @@
 A small Scala 3 adapter that implements the generic `DcbStore` API of [dcb-store-scala] on top of third party
 [sliceworkz-eventstore].
 
-[dcb-store-scala] itself is small Scala 3 API for **DCB** (Dynamic Consistency Boundary) event stores,
+[dcb-store-scala] itself is small Scala 3 API for **DCB** (Dynamic Consistency Boundaries) event stores,
 following <https://dcb.events/>.
 
 With this in place, code written against `DcbStore` — projections, decision models, append
